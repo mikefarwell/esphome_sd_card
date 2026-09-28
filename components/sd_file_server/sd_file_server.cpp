@@ -29,14 +29,15 @@ bool SDFileServer::canHandle(AsyncWebServerRequest *request) const {
   char url_buffer[esphome::web_server_idf::AsyncWebServerRequest::URL_BUF_SIZE];
   const char *url = request->url_to(url_buffer);
   ESP_LOGD(TAG, "can handle %s %u", url,
-           str_startswith(std::string(request->url().c_str()), this->build_prefix()));
-  return str_startswith(std::string(request->url().c_str()), this->build_prefix());
+           str_startswith(std::string(url), this->build_prefix()));
+  return str_startswith(std::string(url), this->build_prefix());
 }
 
 void SDFileServer::handleRequest(AsyncWebServerRequest *request) {
-  const std::string url = request->url().c_str();
+  char url_buffer[esphome::web_server_idf::AsyncWebServerRequest::URL_BUF_SIZE];
+  const char *url = request->url_to(url_buffer);
 
-  ESP_LOGD(TAG, "REQUEST: %s", url.c_str());
+  ESP_LOGD(TAG, "REQUEST: %s", url);
 
   // sicurezza: filtra solo il nostro prefix
   if (!str_startswith(url, this->build_prefix())) {
@@ -58,11 +59,14 @@ void SDFileServer::handleRequest(AsyncWebServerRequest *request) {
 
 void SDFileServer::handleUpload(AsyncWebServerRequest *request, const std::string &filename, size_t index, uint8_t *data,
                                 size_t len, bool final) {
+  char url_buffer[esphome::web_server_idf::AsyncWebServerRequest::URL_BUF_SIZE];
+  const char *url = request->url_to(url_buffer);
+  
   if (!this->upload_enabled_) {
     request->send(401, "application/json", "{ \"error\": \"file upload is disabled\" }");
     return;
   }
-  std::string extracted = this->extract_path_from_url(std::string(request->url().c_str()));
+  std::string extracted = this->extract_path_from_url(std::string(url));
   std::string path = this->build_absolute_path(extracted);
 
   if (index == 0 && !this->sd_mmc_card_->is_directory(path)) {
@@ -99,7 +103,10 @@ void SDFileServer::set_download_enabled(bool allow) { this->download_enabled_ = 
 void SDFileServer::set_upload_enabled(bool allow) { this->upload_enabled_ = allow; }
 
 void SDFileServer::handle_get(AsyncWebServerRequest *request) const {
-  std::string extracted = this->extract_path_from_url(std::string(request->url().c_str()));
+  char url_buffer[esphome::web_server_idf::AsyncWebServerRequest::URL_BUF_SIZE];
+  const char *url = request->url_to(url_buffer);
+  
+  std::string extracted = this->extract_path_from_url(std::string(url));
   std::string path = this->build_absolute_path(extracted);
 
   if (!this->sd_mmc_card_->is_directory(path)) {
@@ -348,11 +355,14 @@ void SDFileServer::handle_download(AsyncWebServerRequest *request, std::string c
 }
 
 void SDFileServer::handle_delete(AsyncWebServerRequest *request) {
+  char url_buffer[esphome::web_server_idf::AsyncWebServerRequest::URL_BUF_SIZE];
+  const char *url = request->url_to(url_buffer);
+  
   if (!this->deletion_enabled_) {
     request->send(401, "application/json", "{ \"error\": \"file deletion is disabled\" }");
     return;
   }
-  std::string extracted = this->extract_path_from_url(std::string(request->url().c_str()));
+  std::string extracted = this->extract_path_from_url(std::string(url));
   std::string path = this->build_absolute_path(extracted);
   if (this->sd_mmc_card_->is_directory(path)) {
     request->send(401, "application/json", "{ \"error\": \"cannot delete a directory\" }");
