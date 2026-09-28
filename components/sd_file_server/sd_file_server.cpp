@@ -26,7 +26,9 @@ void SDFileServer::dump_config() {
 }
 
 bool SDFileServer::canHandle(AsyncWebServerRequest *request) const {
-  ESP_LOGD(TAG, "can handle %s %u", request->url().c_str(),
+  char url_buffer[esphome::web_server_idf::AsyncWebServerRequest::URL_BUF_SIZE];
+  const char *url = request->url_to(url_buffer);
+  ESP_LOGD(TAG, "can handle %s %u", url,
            str_startswith(std::string(request->url().c_str()), this->build_prefix()));
   return str_startswith(std::string(request->url().c_str()), this->build_prefix());
 }
