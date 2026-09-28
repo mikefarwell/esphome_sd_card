@@ -37,7 +37,7 @@ void SDFileServer::handleRequest(AsyncWebServerRequest *request) {
   char url_buffer[esphome::web_server_idf::AsyncWebServerRequest::URL_BUF_SIZE];
   auto url = request->url_to(url_buffer);
 
-  ESP_LOGD(TAG, "REQUEST: %s", url);
+  ESP_LOGD(TAG, "REQUEST: %s", url.c_str());
 
   // sicurezza: filtra solo il nostro prefix
   if (!str_startswith(url.c_str(), this->build_prefix())) {
