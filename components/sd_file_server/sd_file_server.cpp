@@ -27,7 +27,7 @@ void SDFileServer::dump_config() {
 
 bool SDFileServer::canHandle(AsyncWebServerRequest *request) const {
   char url_buffer[esphome::web_server_idf::AsyncWebServerRequest::URL_BUF_SIZE];
-  const char *url = request->url_to(url_buffer);
+  auto url = request->url_to(url_buffer);
   ESP_LOGD(TAG, "can handle %s %u", url.c_str(),
            str_startswith(std::string(url.c_str()), this->build_prefix()));
   return str_startswith(std::string(url.c_str()), this->build_prefix());
@@ -35,7 +35,7 @@ bool SDFileServer::canHandle(AsyncWebServerRequest *request) const {
 
 void SDFileServer::handleRequest(AsyncWebServerRequest *request) {
   char url_buffer[esphome::web_server_idf::AsyncWebServerRequest::URL_BUF_SIZE];
-  const char *url = request->url_to(url_buffer);
+  auto url = request->url_to(url_buffer);
 
   ESP_LOGD(TAG, "REQUEST: %s", url);
 
@@ -60,7 +60,7 @@ void SDFileServer::handleRequest(AsyncWebServerRequest *request) {
 void SDFileServer::handleUpload(AsyncWebServerRequest *request, const std::string &filename, size_t index, uint8_t *data,
                                 size_t len, bool final) {
   char url_buffer[esphome::web_server_idf::AsyncWebServerRequest::URL_BUF_SIZE];
-  const char *url = request->url_to(url_buffer);
+  auto url = request->url_to(url_buffer);
   
   if (!this->upload_enabled_) {
     request->send(401, "application/json", "{ \"error\": \"file upload is disabled\" }");
@@ -104,7 +104,7 @@ void SDFileServer::set_upload_enabled(bool allow) { this->upload_enabled_ = allo
 
 void SDFileServer::handle_get(AsyncWebServerRequest *request) const {
   char url_buffer[esphome::web_server_idf::AsyncWebServerRequest::URL_BUF_SIZE];
-  const char *url = request->url_to(url_buffer);
+  auto url = request->url_to(url_buffer);
   
   std::string extracted = this->extract_path_from_url(std::string(url.c_str()));
   std::string path = this->build_absolute_path(extracted);
@@ -356,7 +356,7 @@ void SDFileServer::handle_download(AsyncWebServerRequest *request, std::string c
 
 void SDFileServer::handle_delete(AsyncWebServerRequest *request) {
   char url_buffer[esphome::web_server_idf::AsyncWebServerRequest::URL_BUF_SIZE];
-  const char *url = request->url_to(url_buffer);
+  auto url = request->url_to(url_buffer);
   
   if (!this->deletion_enabled_) {
     request->send(401, "application/json", "{ \"error\": \"file deletion is disabled\" }");
